@@ -4,7 +4,7 @@ SHELL = /bin/sh
 #### Start of system configuration section. ####
 
 srcdir = .
-topdir = /usr/local/lib/ruby/1.8/i686-darwin9.4.0
+topdir = /usr/local/lib/ruby/1.8/i686-linux
 hdrdir = $(topdir)
 VPATH = $(srcdir):$(topdir):$(hdrdir)
 prefix = $(DESTDIR)/usr/local
@@ -37,23 +37,24 @@ libexecdir = $(exec_prefix)/libexec
 CC = gcc
 LIBRUBY = $(LIBRUBY_A)
 LIBRUBY_A = lib$(RUBY_SO_NAME)-static.a
-LIBRUBYARG_SHARED = 
+LIBRUBYARG_SHARED = -Wl,-R -Wl,$(libdir) -L$(libdir) 
 LIBRUBYARG_STATIC = -l$(RUBY_SO_NAME)-static
 
 RUBY_EXTCONF_H = 
-CFLAGS   =  -fno-common -g -O2 -pipe -fno-common 
+CFLAGS   =  -fPIC -g -O2 
 INCFLAGS = -I. -I$(topdir) -I$(hdrdir) -I$(srcdir)
-CPPFLAGS =  
+DEFS     = -D_FILE_OFFSET_BITS=64
+CPPFLAGS =   $(DEFS)
 CXXFLAGS = $(CFLAGS) 
-DLDFLAGS = -L.   
-LDSHARED = cc -dynamic -bundle -undefined suppress -flat_namespace
+DLDFLAGS = -L.  -rdynamic -Wl,-export-dynamic  
+LDSHARED = $(CC) -shared
 AR = ar
 EXEEXT = 
 
 RUBY_INSTALL_NAME = ruby
 RUBY_SO_NAME = ruby
-arch = i686-darwin9.4.0
-sitearch = i686-darwin9.4.0
+arch = i686-linux
+sitearch = i686-linux
 ruby_version = 1.8
 ruby = /usr/local/bin/ruby
 RUBY = $(ruby)
@@ -69,7 +70,7 @@ COPY = cp
 preload = 
 
 libpath = . $(libdir)
-LIBPATH =  -L"." -L"$(libdir)"
+LIBPATH =  -L. -L$(libdir) -Wl,-R$(libdir)
 DEFFILE = 
 
 CLEANFILES = mkmf.log
@@ -79,11 +80,11 @@ extout =
 extout_prefix = 
 target_prefix = 
 LOCAL_LIBS = 
-LIBS =   -ldl -lobjc  
+LIBS =   -ldl -lcrypt -lm   -lc
 SRCS = harp.c
 OBJS = harp.o
 TARGET = harp
-DLLIB = $(TARGET).bundle
+DLLIB = $(TARGET).so
 EXTSTATIC = 
 STATIC_LIB = 
 
@@ -92,7 +93,7 @@ RUBYLIBDIR    = $(sitelibdir)$(target_prefix)
 RUBYARCHDIR   = $(sitearchdir)$(target_prefix)
 
 TARGET_SO     = $(DLLIB)
-CLEANLIBS     = $(TARGET).bundle $(TARGET).il? $(TARGET).tds $(TARGET).map
+CLEANLIBS     = $(TARGET).so $(TARGET).il? $(TARGET).tds $(TARGET).map
 CLEANOBJS     = *.o *.a *.s[ol] *.pdb *.exp *.bak
 
 all:		$(DLLIB)

@@ -1,6 +1,10 @@
 require 'harp'
 include Harp
+def multiply(a, b)
+  val = 0
+  b.times { val += a }
+end
+
 start
-1 + 1
-2 + 2
+multiply(5, 2)
 stop
