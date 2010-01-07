@@ -3,11 +3,20 @@
 
 struct _harp_call_element {
 	VALUE name;
-  VALUE event_name;
+  rb_event_t event;
   int time;
   struct _harp_call_element * next;
 };
 typedef struct _harp_call_element harp_call_element;
+
+struct _harp_tree_node {
+	harp_call_element * call;
+	struct _harp_tree_node * parent;
+	struct _harp_tree_node * next;
+	struct _harp_tree_node * first_child;
+	struct _harp_tree_node * last_child;
+};
+typedef struct _harp_tree_node harp_tree_node;
 
 harp_call_element * root = NULL;
 harp_call_element * current = NULL;
@@ -16,6 +25,8 @@ VALUE Harp = Qnil;
 
 void Init_harp();
 void harp_handle_event(rb_event_t event, NODE *node, VALUE self, ID id, VALUE klass);
+harp_tree_node * harp_build_tree(harp_tree_node * current_node, harp_call_element * call);
+void harp_print_tree(harp_tree_node * current, int indent);
 
 VALUE method_start(VALUE self);
 VALUE method_stop(VALUE self);
@@ -34,13 +45,11 @@ VALUE method_start(VALUE self) {
 
 VALUE method_stop(VALUE self) {
 	harp_call_element * cursor;
+	harp_tree_node * tree;
 
 	rb_remove_event_hook(harp_handle_event);
-	int i;
-	for(cursor = root ; cursor ; cursor = cursor->next) {
-		rb_funcall(rb_cObject, rb_intern("puts"), 1, cursor->name);
-		rb_funcall(rb_cObject, rb_intern("puts"), 1, cursor->event_name);
-	}
+	tree = harp_build_tree(NULL, root);
+	harp_print_tree(tree, 0);
 }
 
 void harp_handle_event(rb_event_t event, NODE *node, VALUE self, ID id, VALUE klass) {
@@ -48,19 +57,15 @@ void harp_handle_event(rb_event_t event, NODE *node, VALUE self, ID id, VALUE kl
 
   new_call_node = (harp_call_element *)malloc(sizeof(harp_call_element));
   new_call_node->next = NULL;
+
 	switch(event) {
 	case RUBY_EVENT_CALL:
 	case RUBY_EVENT_C_CALL:
 	  new_call_node->name = ID2SYM(id);
-    new_call_node->event_name = ID2SYM(rb_intern("call"));
 		break;
-
-	case RUBY_EVENT_RETURN:
-  case RUBY_EVENT_C_RETURN:
-    new_call_node->name = Qnil;
-    new_call_node->event_name = ID2SYM(rb_intern("return"));
-    break;
   }
+
+	new_call_node->event = event;
   if(!root) {
     root = new_call_node;
     current = root;
@@ -68,4 +73,49 @@ void harp_handle_event(rb_event_t event, NODE *node, VALUE self, ID id, VALUE kl
     current->next = new_call_node;
     current = new_call_node;
   }
+}
+
+harp_tree_node * harp_build_tree(harp_tree_node * current_node, harp_call_element * call) {
+	harp_tree_node * next_node;
+	switch(call->event) {
+	case RUBY_EVENT_CALL:
+	case RUBY_EVENT_C_CALL:
+		next_node = (harp_tree_node *)malloc(sizeof(harp_tree_node));
+		next_node->call = call;
+		next_node->parent = current_node;
+		next_node->next = NULL;
+		next_node->first_child = NULL;
+		next_node->last_child = NULL;
+
+		if(current_node) {
+			if(current_node->last_child) {
+				current_node->last_child->next = next_node;
+			} else {
+				current_node->first_child = next_node;
+			}
+			current_node->last_child = next_node;
+		}
+
+		if(call->next) {
+			harp_build_tree(next_node, call->next);
+		}
+		return next_node;
+	case RUBY_EVENT_RETURN:
+	case RUBY_EVENT_C_RETURN:
+		if(call->next) {
+			harp_build_tree(current_node->parent, call->next);
+		}
+		return NULL;
+	}
+}
+
+void harp_print_tree(harp_tree_node * current, int indent) {
+	rb_funcall(rb_cObject, rb_intern("puts"), 1, INT2NUM(indent));
+	rb_funcall(rb_cObject, rb_intern("puts"), 1, current->call->name);
+	if(current->first_child) {
+		harp_print_tree(current->first_child, indent + 1);
+	}
+	if(current->next) {
+		harp_print_tree(current->next, indent);
+	}
 }
