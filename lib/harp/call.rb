@@ -1,6 +1,6 @@
 module Harp
   class Call < Object
-    attr_reader :clazz, :method, :time, :children
+    attr_reader :clazz, :method, :children
 
     def initialize(clazz, method, time)
       @clazz, @method, @time = clazz, method, time
@@ -9,6 +9,33 @@ module Harp
 
     def add_child(call)
       @children << call
+    end
+
+    def class_name
+      @class_name ||=
+        begin
+          @clazz.name
+        rescue NoMethodError
+          "(unknown)"
+        end
+    end
+
+    def to_s
+      "#{class_name}##{method}"
+    end
+
+    def total_time
+      @time
+    end
+
+    def self_time
+      @self_time ||= total_time - child_time
+    end
+
+    def child_time
+      @child_time ||= @children.inject(0.0) do |time, child|
+        time + child.total_time
+      end
     end
   end
 end

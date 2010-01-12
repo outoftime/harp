@@ -10,14 +10,10 @@ def fib(n)
   end
 end
 
-def output_tree(tree, indent = 0)
-  puts "#{'  ' * indent}#{tree.clazz}##{tree.method} (#{tree.time})"
-  tree.children.each { |child| output_tree(child, indent + 1) }
+def output_tree(node, indent = 0)
 end
 
-result = Harp::Runner.run do
+report = Harp::Report.new.run do
   fib(5)
 end
-output_tree(result)
-
-
+Harp::Formatter::Text.new(report).write

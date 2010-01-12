@@ -1,5 +1,3 @@
-module Harp
+%w(runner call report formatter).each do |file|
+  require File.join(File.dirname(__FILE__), 'harp', file)
 end
-
-require File.join(File.dirname(__FILE__), 'harp', 'runner')
-require File.join(File.dirname(__FILE__), 'harp', 'call')
