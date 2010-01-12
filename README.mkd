@@ -1,0 +1,13 @@
+++ Hark! A Ruby Profiler
+
+Harp is a project to build an awesomer profiler for Ruby. By "awesomer", I
+mostly mean a profiler that exposes a full call stack with timing information.
+
+Harp is a work in progress but it is now slightly working. It currently returns
+a tree of objects representing method calls, each with access to total execution
+time for that method. Future work will center around:
+
+* Making the code not super-ugly.
+* Building out a full API for call stack reports (filtering, aggregation, etc.)
+* Building formatters for outputting call stack reports to files
+* Building one or more front-end representations of call stack reports
