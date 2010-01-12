@@ -53,8 +53,7 @@ VALUE method_stop(VALUE self);
 
 void Init_runner()
 {
-	VALUE Harp = rb_eval_string("Harp");
-	Harp_Runner = rb_define_module_under(Harp, "Runner");
+	Harp_Runner = rb_eval_string("Harp::Runner");
 	rb_define_singleton_method(Harp_Runner, "start", method_start, 0);
 	rb_define_singleton_method(Harp_Runner, "stop", method_stop, 0);
 }

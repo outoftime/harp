@@ -15,8 +15,9 @@ def output_tree(tree, indent = 0)
   tree.children.each { |child| output_tree(child, indent + 1) }
 end
 
-Harp::Runner.start
-fib(5)
-output_tree(Harp::Runner.stop)
+result = Harp::Runner.run do
+  fib(5)
+end
+output_tree(result)
 
 
