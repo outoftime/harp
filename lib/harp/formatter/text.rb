@@ -15,10 +15,11 @@ module Harp
 
       def write_header(io)
         io.puts(sprintf(
-          '%-10s  %-10s  %-10s  %-5s  %s',
+          '%-10s  %-10s  %-10s  %-7s  %-5s  %s',
           'total',
           'self',
           'child',
+          'percent',
           'count',
           'call'
         ))
@@ -40,10 +41,11 @@ module Harp
 
       def write_node(io, node, indent = 0)
         io.puts(sprintf(
-          "%.8f  %.8f  %.8f  %5d  #{'  '*indent}%s",
+          "%.8f  %.8f  %.8f  %7d  %5d  #{'  '*indent}%s",
           node.total_time,
           node.self_time,
           node.child_time,
+          (node.time_for_percent / @report.head.total_time * 100),
           node.count,
           node
         ))

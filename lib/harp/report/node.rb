@@ -18,6 +18,10 @@ module Harp
       def children
         @children.values
       end
+
+      def time_for_percent
+        total_time
+      end
     end
   end
 end

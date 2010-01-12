@@ -43,6 +43,10 @@ module Harp
         @calls.first.to_s
       end
 
+      def time_for_percent
+        self_time
+      end
+
       private
 
       def sum(collection)
