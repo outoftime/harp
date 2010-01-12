@@ -1,7 +1,4 @@
-require 'harp'
-require 'harp/call'
-
-include Harp
+require 'lib/harp'
 
 def fib(n)
   if n == 0
@@ -18,8 +15,8 @@ def output_tree(tree, indent = 0)
   tree.children.each { |child| output_tree(child, indent + 1) }
 end
 
-start
+Harp::Runner.start
 fib(5)
-output_tree(stop)
+output_tree(Harp::Runner.stop)
 
 

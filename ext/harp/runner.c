@@ -28,9 +28,9 @@ typedef struct _harp_tree_node harp_tree_node;
 harp_call_element * root = NULL;
 harp_call_element * current = NULL;
 
-VALUE Harp = Qnil;
+VALUE Harp_Runner = Qnil;
 
-void Init_harp();
+void Init_runner();
 
 void harp_handle_event(rb_event_t event,
 											 NODE *node,
@@ -51,11 +51,12 @@ VALUE method_start(VALUE self);
 
 VALUE method_stop(VALUE self);
 
-void Init_harp()
+void Init_runner()
 {
-	Harp = rb_define_module("Harp");
-	rb_define_method(Harp, "start", method_start, 0);
-	rb_define_method(Harp, "stop", method_stop, 0);
+	VALUE Harp = rb_eval_string("Harp");
+	Harp_Runner = rb_define_module_under(Harp, "Runner");
+	rb_define_singleton_method(Harp_Runner, "start", method_start, 0);
+	rb_define_singleton_method(Harp_Runner, "stop", method_stop, 0);
 }
 
 VALUE method_start(VALUE self)

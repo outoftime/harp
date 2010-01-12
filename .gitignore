@@ -1,3 +1,2 @@
 harp.bundle
-harp.o
-harp.so
+Makefile
