@@ -45,7 +45,7 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 void harp_print_tree(harp_tree_node * current,
 										 int indent);
 
-VALUE harp_build_ruby_tree(harp_tree_node * root);
+VALUE harp_build_ruby_trees(harp_tree_node * root);
 
 VALUE method_start(VALUE self);
 
@@ -76,7 +76,8 @@ VALUE method_stop(VALUE self)
 
 	rb_remove_event_hook(harp_handle_event);
 	tree = harp_build_tree(NULL, root, &counter);
-	return harp_build_ruby_tree(tree);
+	// harp_print_tree(tree, 0);
+	return harp_build_ruby_trees(tree);
 }
 
 void harp_handle_event(rb_event_t event,
@@ -87,8 +88,9 @@ void harp_handle_event(rb_event_t event,
 {
 	harp_call_element * new_call_node;
 	struct timeval current_time;
+	double current_clock;
 	gettimeofday(&current_time, NULL);
-	double current_clock = current_time.tv_sec + (current_time.tv_usec / 1000000.0);
+	current_clock = current_time.tv_sec + (current_time.tv_usec / 1000000.0);
 
   new_call_node = ALLOC(harp_call_element);
   new_call_node->next = NULL;
@@ -116,15 +118,17 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 																 harp_call_element * call,
 																 int * counter)
 {
-	harp_tree_node * root_node;
+	harp_tree_node * first_top_node;
+	harp_tree_node * last_top_node;
 	harp_tree_node * next_node;
 	while(call->next) { // This means we don't get the very last call, which is to #stop
 		switch(call->event) {
 		case RUBY_EVENT_CALL:
 		case RUBY_EVENT_C_CALL:
 			next_node = ALLOC(harp_tree_node);
-			if(!root_node) {
-				root_node = next_node;
+			if(!first_top_node) {
+				first_top_node = next_node;
+				last_top_node = next_node;
 			}
 			next_node->klass = call->klass;
 			if(call->name == 1) {
@@ -145,6 +149,9 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 					current_node->first_child = next_node;
 				}
 				current_node->last_child = next_node;
+			} else {
+				last_top_node->next = next_node;
+				last_top_node = next_node;
 			}
 
 			current_node = next_node;
@@ -152,20 +159,18 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 		case RUBY_EVENT_RETURN:
 		case RUBY_EVENT_C_RETURN:
 			current_node->time = (double) call->clock - (double) current_node->call->clock;
-			if(current_node->parent) {
-				current_node = current_node->parent;
-			}
+			current_node = current_node->parent;
 			break;
 		}
 		call = call->next;
 	}
-	return root_node;
+	return first_top_node;
 }
 
 void harp_print_tree(harp_tree_node * current,
 										 int indent)
 {
-	if(current->klass) {
+	if(current->klass && 0) { // XXX
 		rb_funcall(rb_cObject, rb_intern("puts"), 1, current->klass);
 	}
 	if(current->name) {
@@ -181,15 +186,24 @@ void harp_print_tree(harp_tree_node * current,
 	}
 }
 
-VALUE harp_build_ruby_tree(harp_tree_node * root)
+VALUE harp_build_ruby_trees(harp_tree_node * first_top_node)
 {
 	VALUE harp_call_class = rb_eval_string("Harp::Call");
-	VALUE new_ruby_node = rb_funcall(harp_call_class, rb_intern("new"), 3, root->klass, root->name, rb_float_new(root->time));
-	harp_tree_node * current_child;
+	VALUE ruby_nodes = rb_ary_new();
+	VALUE new_ruby_node;
+	harp_tree_node * current_node;
 
-	for(current_child = root->first_child; current_child; current_child = current_child->next) {
-		rb_funcall(new_ruby_node, rb_intern("add_child"), 1, harp_build_ruby_tree(current_child));
+
+	for (current_node = first_top_node; current_node; current_node = current_node->next) {
+		new_ruby_node = rb_funcall(harp_call_class,
+														   rb_intern("new"),
+															 3,
+															 rb_str_new2(rb_class2name(current_node->klass)),
+															 current_node->name,
+															 rb_float_new(current_node->time));
+		rb_ary_push(ruby_nodes, new_ruby_node);
+		rb_funcall(new_ruby_node, rb_intern("add_children"), 1, harp_build_ruby_trees(current_node->first_child));
 	}
 
-	return new_ruby_node;
+	return ruby_nodes;
 }

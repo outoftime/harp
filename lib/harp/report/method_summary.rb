@@ -1,7 +1,10 @@
 module Harp
   class Report
     class MethodSummary
-      def initialize(call = nil)
+      attr_reader :parent
+
+      def initialize(parent, call = nil)
+        @parent = parent
         @calls = []
         self << call if call
       end

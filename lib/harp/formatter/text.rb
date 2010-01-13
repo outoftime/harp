@@ -1,10 +1,6 @@
 module Harp
   module Formatter
-    class Text
-      def initialize(report)
-        @report = report
-      end
-
+    class Text < Base
       def write(io = $stdout)
         write_method_summary(io)
         io.puts('')
@@ -15,10 +11,11 @@ module Harp
 
       def write_header(io)
         io.puts(sprintf(
-          '%-10s  %-10s  %-10s  %-7s  %-5s  %s',
+          '%-10s  %-10s  %-10s  %-15s  %-7s  %-5s  %s',
           'total',
           'self',
           'child',
+          'total percent',
           'percent',
           'count',
           'call'
@@ -29,31 +26,39 @@ module Harp
         io.puts("=== METHOD SUMMARY ===")
         write_header(io)
         @report.methods.each do |method|
-          write_node(io, method)
+          write_node(io, method, @report.total_time)
         end
       end
 
       def write_call_tree(io)
         io.puts("=== CALL TREE ===")
         write_header(io)
-        write_node_tree(io, @report.head)
+        @report.heads.each { |head| write_node_tree(io, head, @report.total_time) }
       end
 
       def write_node(io, node, indent = 0)
+        percent_of_total = node.time_for_percent / @report.total_time * 100
+        percent = node.time_for_percent / node.parent.total_time * 100
         io.puts(sprintf(
-          "%.8f  %.8f  %.8f  %7d  %5d  #{'  '*indent}%s",
+          "%.8f  %.8f  %.8f  %15d  %7d  %5d  #{'  '*indent}%s",
           node.total_time,
           node.self_time,
           node.child_time,
-          (node.time_for_percent / @report.head.total_time * 100),
+          percent_of_total,
+          percent,
           node.count,
-          node
+          node_signature(node)
         ))
       end
 
       def write_node_tree(io, node, indent = 0)
-        write_node(io, node, indent)
-        node.children.each { |child| write_node_tree(io, child, indent + 1) }
+        unless stop_node?(node)
+          unless skip_node?(node)
+            write_node(io, node, indent)
+            indent += 1
+          end
+          node.children.each { |child| write_node_tree(io, child, indent) }
+        end
       end
     end
   end

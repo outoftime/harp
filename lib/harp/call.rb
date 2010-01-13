@@ -11,13 +11,12 @@ module Harp
       @children << call
     end
 
+    def add_children(calls)
+      calls.each { |call| add_child(call) }
+    end
+
     def class_name
-      @class_name ||=
-        begin
-          @clazz.name
-        rescue NoMethodError
-          "(unknown)"
-        end
+      @clazz.to_s
     end
 
     def to_s
