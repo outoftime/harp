@@ -118,9 +118,9 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 																 harp_call_element * call,
 																 int * counter)
 {
-	harp_tree_node * first_top_node;
-	harp_tree_node * last_top_node;
-	harp_tree_node * next_node;
+	harp_tree_node * first_top_node = NULL;
+	harp_tree_node * last_top_node = NULL;
+	harp_tree_node * next_node = NULL;
 	while(call->next) { // This means we don't get the very last call, which is to #stop
 		switch(call->event) {
 		case RUBY_EVENT_CALL:
@@ -149,7 +149,7 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 					current_node->first_child = next_node;
 				}
 				current_node->last_child = next_node;
-			} else {
+			} else if(last_top_node) {
 				last_top_node->next = next_node;
 				last_top_node = next_node;
 			}
