@@ -27,10 +27,10 @@ struct _harp_tree_node {
 };
 typedef struct _harp_tree_node harp_tree_node;
 
-harp_call_element * root = NULL;
-harp_call_element * current = NULL;
+static harp_call_element * root = NULL;
+static harp_call_element * current = NULL;
 
-VALUE Harp_Runner = Qnil;
+static VALUE Harp_Runner = Qnil;
 
 void Init_runner();
 
@@ -40,14 +40,14 @@ void harp_handle_event(rb_event_t event,
 											 ID id,
 										   VALUE klass);
 
-harp_tree_node * harp_build_tree(harp_tree_node * current_node,
-															   harp_call_element * call,
-																 int * counter);
+static harp_tree_node * harp_build_tree(harp_tree_node * current_node,
+															          harp_call_element * call,
+																        int * counter);
 
-void harp_print_tree(harp_tree_node * current,
-										 int indent);
+static void harp_print_tree(harp_tree_node * current,
+										        int indent);
 
-VALUE harp_build_ruby_trees(harp_tree_node * root);
+static VALUE harp_build_ruby_trees(harp_tree_node * root);
 
 VALUE method_start(VALUE self);
 
@@ -78,6 +78,8 @@ VALUE method_stop(VALUE self)
 
 	rb_remove_event_hook(harp_handle_event);
 	tree = harp_build_tree(NULL, root, &counter);
+  root = NULL;
+  current = NULL;
 	// harp_print_tree(tree, 0);
 	return harp_build_ruby_trees(tree);
 }
@@ -117,7 +119,7 @@ void harp_handle_event(rb_event_t event,
   }
 }
 
-harp_tree_node * harp_build_tree(harp_tree_node * current_node,
+static harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 																 harp_call_element * call,
 																 int * counter)
 {
@@ -151,11 +153,13 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 					current_node->first_child = next_node;
 				}
 				current_node->last_child = next_node;
-			} else if(last_top_node) {
-				last_top_node->next = next_node;
+			} else {
+        if(last_top_node) {
+          last_top_node->next = next_node;
+        }
+        last_top_node = next_node;
       }
 
-      last_top_node = next_node;
 
 			current_node = next_node;
 			break;
@@ -171,7 +175,7 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 	return first_top_node;
 }
 
-void harp_print_tree(harp_tree_node * current,
+static void harp_print_tree(harp_tree_node * current,
 										 int indent)
 {
 	if(current->klass && 0) { // XXX

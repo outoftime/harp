@@ -1,23 +1,19 @@
 module Harp
   class Report
-    class Node < MethodSummary
-      def initialize(parent, call = nil)
+    class Node
+      def initialize(report)
+        @report = report
         @children = {}
-        super
       end
 
       def children
         @children.values
       end
 
-      def add_child(call)
-        child_node = @children[call.to_s] ||= Node.new(self)
-        child_node << call
+      def add_child_call(child_call)
+        child_node = @children[child_call.to_s] ||= CallNode.new(@report, self)
+        child_node << child_call
         child_node
-      end
-
-      def time_for_percent
-        total_time
       end
     end
   end

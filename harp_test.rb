@@ -33,10 +33,23 @@ def alloc_something
   []
 end
 
-report = Harp::Report.new.run do
-  alloc_something
+def call_alloc_something
   alloc_something
 end
+
+def do_nothing
+end
+
+def call_do_nothing
+  do_nothing
+  do_nothing
+end
+
+report = Harp::Report.new.run do
+  alloc_something
+  call_do_nothing
+  call_alloc_something
+end
 formatter = Harp::Formatter::Dot.new(report)
-formatter.filter_by_signature(nil, 'call_raise_exception')
+formatter.filter_by_signature(/#call_raise_exception$/)
 formatter.write

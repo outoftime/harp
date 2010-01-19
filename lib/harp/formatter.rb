@@ -18,27 +18,9 @@ module Harp
         @filters << block
       end
 
-      def filter_by_signature(class_name, *methods)
-        methods = [nil] if methods.empty?
-        methods.each do |method|
-          filter do |node|
-            match = true
-            if class_name
-              if class_name.is_a?(String)
-                match = class_name == node.class_name
-              else
-                match = class_name =~ node.class_name
-              end
-            end
-            if method && match
-              if method.is_a?(String)
-                match = method == node.method.to_s
-              else
-                match = method =~ node.method.to_s
-              end
-            end
-            match
-          end
+      def filter_by_signature(expr)
+        filter do |node|
+          node.to_s =~ expr
         end
       end
 
@@ -49,9 +31,7 @@ module Harp
       private
 
       def stop_node?(node)
-        percent = node.time_for_percent.to_f / node.parent.total_time.to_f * 100.0
-        total_percent = node.time_for_percent.to_f / @report.total_time.to_f * 100.0
-        percent < @min_percent || total_percent < @min_total_percent
+        node.percent_time_of_parent < @min_percent || node.percent_time_of_total < @min_total_percent
       end
 
       def skip_node?(node)
