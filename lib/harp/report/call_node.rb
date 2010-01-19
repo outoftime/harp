@@ -27,11 +27,19 @@ module Harp
       end
 
       def percent_allocations_of_parent
-        total_allocations / parent.total_allocations * 100
+        if parent.total_allocations == 0
+          0.0
+        else
+          total_allocations / parent.total_allocations * 100
+        end
       end
 
       def percent_allocations_of_total
-        total_allocations / @report.total_allocations * 100
+        if @report.total_allocations == 0
+          0.0
+        else
+          total_allocations / @report.total_allocations * 100
+        end
       end
 
       def to_s

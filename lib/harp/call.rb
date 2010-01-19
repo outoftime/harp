@@ -38,7 +38,13 @@ module Harp
     end
 
     def total_allocations
-      @allocations
+      # It's weird, but it looks like every method call increments the object
+      # allocation counter, even when it's quite clear no allocation is
+      # happening. I've checked and it doesn't look like the allocation is a
+      # side-effect of anything happening in the Harp event hook, so this
+      # admittedly ugly hack is the best I can come up with to get the right
+      # number of allocations.
+      @total_allocations ||= @allocations - tree_size
     end
 
     def self_allocations
@@ -48,6 +54,12 @@ module Harp
     def child_allocations
       @child_allocations ||= @children.inject(0) do |allocations, child|
         allocations + child.total_allocations
+      end
+    end
+
+    def tree_size
+      @tree_size ||= @children.inject(0) do |tree_size, child|
+        tree_size + child.tree_size + 1
       end
     end
   end

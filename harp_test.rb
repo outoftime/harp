@@ -45,9 +45,14 @@ def call_do_nothing
   do_nothing
 end
 
+def call_call_do_nothing
+  call_do_nothing
+end
+
 report = Harp::Report.new.run do
   alloc_something
   call_do_nothing
+  call_call_do_nothing
   call_alloc_something
 end
 formatter = Harp::Formatter::Dot.new(report)
