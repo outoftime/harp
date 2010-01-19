@@ -2,8 +2,8 @@ module Harp
   class Call < Object
     attr_reader :clazz, :method, :children
 
-    def initialize(clazz, method, time)
-      @clazz, @method, @time = clazz, method, time
+    def initialize(clazz, method, time, allocations)
+      @clazz, @method, @time, @allocations = clazz, method, time, allocations
       @children = []
     end
 
@@ -34,6 +34,20 @@ module Harp
     def child_time
       @child_time ||= @children.inject(0.0) do |time, child|
         time + child.total_time
+      end
+    end
+
+    def total_allocations
+      @allocations
+    end
+
+    def self_allocations
+      @self_allocations ||= total_allocations - child_allocations
+    end
+
+    def child_allocations
+      @child_allocations ||= @children.inject(0) do |allocations, child|
+        allocations + child.total_allocations
       end
     end
   end

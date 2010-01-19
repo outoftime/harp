@@ -23,6 +23,13 @@ module Harp
       def write_node_tree(node, parent_node, parent_dot_node, graph)
         percent = (node.total_time / parent_node.total_time) * 100
         total_percent = (node.total_time / @report.total_time) * 100
+        allocation_percent =
+          if parent_node.total_allocations > 0
+            (node.total_allocations.to_f / parent_node.total_allocations.to_f) * 100
+          else
+            0
+          end
+        total_allocation_percent = (node.total_allocations.to_f / @report.total_allocations.to_f) * 100
         unless stop_node?(node)
           if skip_node?(node) #XXX DRY
             node.children.each do |child_node|
@@ -31,10 +38,15 @@ module Harp
           else
             label = [
               node_signature(node),
-              sprintf("%.5f total", node.total_time),
-              sprintf("%.5f self", node.self_time),
-              sprintf("%.5f child", node.child_time),
-              "#{percent.to_i}% / #{total_percent.to_i}%"
+              sprintf("%.5f total time", node.total_time),
+              sprintf("%.5f self time", node.self_time),
+              sprintf("%.5f child time", node.child_time),
+              "#{percent.to_i}% / #{total_percent.to_i}%",
+              '',
+              sprintf("%5d total allocations", node.total_allocations), 
+              sprintf("%5d self allocations", node.self_allocations),
+              sprintf("%5d child allocations", node.child_allocations),
+              "#{allocation_percent.to_i}% / #{total_allocation_percent.to_i}%"
             ].join('\n')
             graph.node(node_name(node), :label => label, :shape => 'box') do |dot_node|
               parent_dot_node.connection(dot_node.name, :label => node.count)

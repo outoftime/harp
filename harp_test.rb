@@ -29,15 +29,14 @@ end
 
 i = 0
 
+def alloc_something
+  []
+end
 
 report = Harp::Report.new.run do
-  begin
-    fib(0)
-    call_raise_exception
-  rescue
-  end
-  fib(5)
+  alloc_something
+  alloc_something
 end
-formatter = Harp::Formatter::Text.new(report)
+formatter = Harp::Formatter::Dot.new(report)
 formatter.filter_by_signature(nil, 'call_raise_exception')
 formatter.write

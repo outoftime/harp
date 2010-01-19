@@ -9,6 +9,7 @@ struct _harp_call_element {
 	ID name;
   rb_event_t event;
   double clock;
+	unsigned long allocated_objects;
   struct _harp_call_element * next;
 };
 typedef struct _harp_call_element harp_call_element;
@@ -18,6 +19,7 @@ struct _harp_tree_node {
 	VALUE klass;
 	VALUE name;
 	double time;
+	unsigned long allocations;
 	struct _harp_tree_node * parent;
 	struct _harp_tree_node * next;
 	struct _harp_tree_node * first_child;
@@ -105,6 +107,7 @@ void harp_handle_event(rb_event_t event,
 
 	new_call_node->event = event;
 	new_call_node->clock = current_clock;
+	new_call_node->allocated_objects = rb_os_allocated_objects();
   if(!root) {
     root = new_call_node;
     current = root;
@@ -128,7 +131,6 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 			next_node = ALLOC(harp_tree_node);
 			if(!first_top_node) {
 				first_top_node = next_node;
-				last_top_node = next_node;
 			}
 			next_node->klass = call->klass;
 			if(call->name == 1) {
@@ -151,14 +153,16 @@ harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 				current_node->last_child = next_node;
 			} else if(last_top_node) {
 				last_top_node->next = next_node;
-				last_top_node = next_node;
-			}
+      }
+
+      last_top_node = next_node;
 
 			current_node = next_node;
 			break;
 		case RUBY_EVENT_RETURN:
 		case RUBY_EVENT_C_RETURN:
 			current_node->time = (double) call->clock - (double) current_node->call->clock;
+			current_node->allocations = call->allocated_objects - current_node->call->allocated_objects;
 			current_node = current_node->parent;
 			break;
 		}
@@ -195,12 +199,14 @@ VALUE harp_build_ruby_trees(harp_tree_node * first_top_node)
 
 
 	for (current_node = first_top_node; current_node; current_node = current_node->next) {
+    VALUE allocations;
 		new_ruby_node = rb_funcall(harp_call_class,
 														   rb_intern("new"),
-															 3,
+															 4,
 															 rb_str_new2(rb_class2name(current_node->klass)),
 															 current_node->name,
-															 rb_float_new(current_node->time));
+															 rb_float_new(current_node->time),
+															 ULONG2NUM(current_node->allocations));
 		rb_ary_push(ruby_nodes, new_ruby_node);
 		rb_funcall(new_ruby_node, rb_intern("add_children"), 1, harp_build_ruby_trees(current_node->first_child));
 	}

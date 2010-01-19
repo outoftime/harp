@@ -13,6 +13,10 @@ module Harp
       @heads.inject(0.0) { |time, head| time + head.total_time }
     end
 
+    def total_allocations
+      @heads.inject(0) { |allocations, head| allocations + head.total_allocations }
+    end
+
     def add_call_trees(heads)
       heads.each { |head| add_call_tree(head) }
     end
