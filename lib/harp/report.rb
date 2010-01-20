@@ -10,6 +10,7 @@ module Harp
 
     def initialize
       @root = RootNode.new(self)
+      @method_summaries ||= {}
     end
 
     def run(&block)
@@ -25,6 +26,12 @@ module Harp
 
     def total_allocations
       @root.total_allocations
+    end
+
+    def method_summary(call)
+      method_summary = @method_summaries[call.to_s] ||= MethodSummary.new(self)
+      method_summary << call
+      method_summary
     end
   end
 end

@@ -1,12 +1,13 @@
 module Harp
   class Report
     class MethodSummary
-      attr_reader :parent
+      include MethodAggregator
 
-      def initialize(parent, call = nil)
-        @parent = parent
+      attr_reader :calls
+
+      def initialize(report)
+        @report = report
         @calls = []
-        self << call if call
       end
 
       def <<(call)
@@ -14,58 +15,20 @@ module Harp
         call
       end
 
-      def class_name
-        @calls.first.class_name
+      def percent_time_of_total
+        total_time / @report.total_time * 100
       end
 
-      def method
-        @calls.first.method
+      def percent_allocations_of_total
+        total_allocations.to_f / @report.total_allocations.to_f * 100
       end
 
       def to_s
         @calls.first.to_s
-      end
-
-      def total_time
-        @total_time ||= sum { |call| call.total_time }
-      end
-
-      def self_time
-        @self_time ||= sum { |call| call.self_time }
-      end
-
-      def child_time
-        @child_time ||= sum { |call| call.child_time }
-      end
-
-      def total_allocations
-        @total_allocations ||= sum(0) { |call| call.total_allocations }
-      end
-
-      def self_allocations
-        @self_allocations ||= sum(0) { |call| call.self_allocations }
-      end
-
-      def child_allocations
-        @child_allocations ||= sum(0) { |call| call.child_allocations }
       end
 
       def count
-        @count_time ||= @calls.length
-      end
-
-      def to_s
-        @calls.first.to_s
-      end
-
-      def time_for_percent
-        self_time
-      end
-
-      private
-
-      def sum(base = 0.0)
-        @calls.inject(base) { |time, item| time + yield(item) }
+        @calls.length
       end
     end
   end

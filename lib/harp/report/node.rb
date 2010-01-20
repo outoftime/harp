@@ -11,7 +11,8 @@ module Harp
       end
 
       def add_child_call(child_call)
-        child_node = @children[child_call.to_s] ||= CallNode.new(@report, self)
+        method_summary = @report.method_summary(child_call)
+        child_node = @children[child_call.to_s] ||= CallNode.new(@report, self, method_summary)
         child_node << child_call
         child_node
       end

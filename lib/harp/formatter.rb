@@ -5,13 +5,22 @@ module Harp
     autoload :Dot, File.join(File.dirname(__FILE__), 'formatter', 'dot')
 
     class Base
-      attr_writer :min_percent
-      attr_writer :min_total_percent
+      attr_writer :min_percent_time_of_parent
+      attr_writer :min_percent_time_of_total
+      attr_writer :min_aggregate_percent_time_of_total
+      attr_writer :min_percent_allocations_of_parent
+      attr_writer :min_percent_allocations_of_total
+      attr_writer :min_aggregate_percent_allocations_of_total
 
       def initialize(report)
         @report = report
         @filters = []
-        @min_percent = @min_total_percent = 0.0
+        @min_percent_time_of_parent =
+          @min_percent_time_of_total =
+          @min_aggregate_percent_time_of_total =
+          @min_percent_allocations_of_parent =
+          @min_percent_allocations_of_total =
+          @min_aggregate_percent_allocations_of_total = 0.0
       end
 
       def filter(&block)
@@ -31,7 +40,19 @@ module Harp
       private
 
       def stop_node?(node)
-        node.percent_time_of_parent < @min_percent || node.percent_time_of_total < @min_total_percent
+        time_stop_node?(node) && allocations_stop_node?(node)
+      end
+
+      def time_stop_node?(node)
+        node.percent_time_of_parent < @min_percent_time_of_parent ||
+          node.percent_time_of_total < @min_percent_time_of_total ||
+          node.aggregate_percent_time_of_total < @min_aggregate_percent_time_of_total
+      end
+
+      def allocations_stop_node?(node)
+        node.percent_allocations_of_parent < @min_percent_allocations_of_parent ||
+          node.percent_allocations_of_total < @min_percent_allocations_of_total ||
+          node.aggregate_percent_allocations_of_total < @min_aggregate_percent_allocations_of_total
       end
 
       def skip_node?(node)

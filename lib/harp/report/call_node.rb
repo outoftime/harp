@@ -5,9 +5,9 @@ module Harp
 
       attr_reader :parent, :calls
 
-      def initialize(report, parent)
+      def initialize(report, parent, method_summary)
         super(report)
-        @parent = parent
+        @parent, @method_summary = parent, method_summary
         @calls = []
       end
 
@@ -26,11 +26,15 @@ module Harp
         total_time / @report.total_time * 100
       end
 
+      def aggregate_percent_time_of_total
+        @method_summary.percent_time_of_total
+      end
+
       def percent_allocations_of_parent
         if parent.total_allocations == 0
           0.0
         else
-          total_allocations / parent.total_allocations * 100
+          total_allocations.to_f / parent.total_allocations.to_f * 100
         end
       end
 
@@ -38,16 +42,24 @@ module Harp
         if @report.total_allocations == 0
           0.0
         else
-          total_allocations / @report.total_allocations * 100
+          total_allocations.to_f / @report.total_allocations.to_f * 100
         end
       end
 
-      def to_s
-        @calls.first.to_s
+      def aggregate_percent_allocations_of_total
+        @method_summary.percent_allocations_of_total
       end
 
       def count
         @calls.length
+      end
+
+      def aggregate_count
+        @method_summary.count
+      end
+
+      def to_s
+        @calls.first.to_s
       end
     end
   end

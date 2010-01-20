@@ -28,16 +28,16 @@ module Harp
               sprintf("%.5f total time", node.total_time),
               sprintf("%.5f self time", node.self_time),
               sprintf("%.5f child time", node.child_time),
-              "#{node.percent_time_of_parent.to_i}% / #{node.percent_time_of_total.to_i}%",
+              "#{node.percent_time_of_parent.to_i}% / #{node.percent_time_of_total.to_i}% (#{node.aggregate_percent_time_of_total.to_i}%)",
               '',
               sprintf("%5d total allocations", node.total_allocations), 
               sprintf("%5d self allocations", node.self_allocations),
               sprintf("%5d child allocations", node.child_allocations),
-              "#{node.percent_allocations_of_parent.to_i}% / #{node.percent_allocations_of_total.to_i}%"
+              "#{node.percent_allocations_of_parent.to_i}% / #{node.percent_allocations_of_total.to_i}% (#{node.aggregate_percent_allocations_of_total.to_i}%)"
             ].join('\n')
             graph.node(node_name(node), :label => label, :shape => 'box') do |dot_node|
               if parent_dot_node
-                parent_dot_node.connection(dot_node.name, :label => node.count)
+                parent_dot_node.connection(dot_node.name, :label => "#{node.count}/#{node.aggregate_count}")
               end
               node.children.each do |child_node|
                 write_node_tree(child_node, dot_node, graph)

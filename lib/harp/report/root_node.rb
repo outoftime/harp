@@ -22,18 +22,14 @@ module Harp
       def percent_time_of_parent
         100.0
       end
-
-      def percent_time_of_total
-        100.0
-      end
+      alias_method :percent_time_of_total, :percent_time_of_parent
+      alias_method :aggregate_percent_time_of_total, :percent_time_of_parent
 
       def percent_allocations_of_parent
         100.0
       end
-
-      def percent_allocations_of_total
-        100.0
-      end
+      alias_method :percent_allocations_of_total, :percent_allocations_of_parent
+      alias_method :aggregate_percent_allocations_of_total, :percent_allocations_of_parent
 
       def to_s
         "ROOT"
