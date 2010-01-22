@@ -1,8 +1,9 @@
 module Harp
   module Formatter
+    autoload :Dot, File.join(File.dirname(__FILE__), 'formatter', 'dot')
     autoload :Text, File.join(File.dirname(__FILE__), 'formatter', 'text')
     autoload :Xml, File.join(File.dirname(__FILE__), 'formatter', 'xml')
-    autoload :Dot, File.join(File.dirname(__FILE__), 'formatter', 'dot')
+    autoload :Yaml, File.join(File.dirname(__FILE__), 'formatter', 'yaml')
 
     class Base
       attr_writer :min_percent_time_of_parent

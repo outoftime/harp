@@ -31,6 +31,11 @@ module Harp
       alias_method :percent_allocations_of_total, :percent_allocations_of_parent
       alias_method :aggregate_percent_allocations_of_total, :percent_allocations_of_parent
 
+      def count
+        children.inject(0) { |sum, child| child.count }
+      end
+      alias_method :aggregate_count, :count
+
       def to_s
         "ROOT"
       end

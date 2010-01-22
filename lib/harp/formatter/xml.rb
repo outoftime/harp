@@ -7,8 +7,8 @@ module Harp
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.report do |report|
             report.send(:"call-tree") do |call_tree|
-              @report.heads.each do |head|
-                write_node_tree(call_tree, head)
+              @report.root.children.each do |call_node|
+                write_node_tree(call_tree, call_node)
               end
             end
           end
@@ -21,13 +21,16 @@ module Harp
       def write_node_tree(xml, node)
         unless stop_node?(node)
           xml.call(
-            :class => node.class_name,
-            :method => node.method,
+            :name => node.to_s,
             :total => node.total_time,
             :self => node.self_time,
             :child => node.child_time,
-            :total_percent => ((node.total_time.to_f / @report.total_time.to_f) * 100).to_i,
-            :percent => ((node.total_time.to_f / node.parent.total_time.to_f) * 100).to_i
+            :"percent-time-of-parent" => node.percent_time_of_parent.to_i,
+            :"percent-time-of-total" => node.percent_time_of_total.to_i,
+            :"aggregate-percent-time-of-total" => node.aggregate_percent_time_of_total.to_i,
+            :"percent-allocations-of-parent" => node.percent_allocations_of_parent.to_i,
+            :"percent-allocations-of-total" => node.percent_allocations_of_total.to_i,
+            :"aggregate-percent-allocations-of-total" => node.aggregate_percent_allocations_of_total.to_i
           ) do |call_xml|
             node.children.each do |child_node|
               write_node_tree(call_xml, child_node)

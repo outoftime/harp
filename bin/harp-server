@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+using_gems = false
+begin
+  require 'sinatra'
+  require 'haml'
+rescue LoadError => e
+  if using_gems then raise(e)
+  else
+    using_gems = true
+    require 'rubygems'
+    retry
+  end
+end
+
+module Harp
+  module Server
+    class ReportViewer
+      def initialize(filename)
+        @yaml = File.open(FILENAME) { |f| YAML.load(f) }
+        @nodes = []
+        store_node(@yaml)
+      end
+
+      def [](id)
+        @nodes[id.to_i]
+      end
+
+      private
+
+      def store_node(node)
+        node[:id] = @nodes.length
+        @nodes << node
+        slowest_time = 0.0
+        slowest_child = nil
+        node[:children].each do |child|
+          if child[:data][:total_time] > slowest_time
+            slowest_child = child 
+            slowest_time = child[:data][:total_time]
+          end
+          store_node(child)
+        end
+        slowest_child[:slowest] = true if slowest_child && node[:children].length > 1
+      end
+    end
+  end
+end
+
+FILENAME = File.expand_path(ARGV[0])
+REPORT_VIEWER = Harp::Server::ReportViewer.new(FILENAME)
+
+set :views, File.join(File.dirname(__FILE__), '..', 'harp_server', 'views')
+set :public, File.join(File.dirname(__FILE__), '..', 'harp_server', 'static')
+
+get '/' do
+  @title = FILENAME
+  haml :index
+end
+
+get '/node/:id/children' do |id|
+  @node = REPORT_VIEWER[id]
+  haml :node
+end

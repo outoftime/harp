@@ -1,0 +1,25 @@
+%ul.children
+  - @node[:children].each do |child|
+    %li{ :class => "callNode#{ ' slowest' if child[:slowest]}" }
+      .id= child[:id]
+      - has_children = child[:children].any?
+      .expand
+        - if has_children
+          %a{ :href => '#' } [+]
+        - else
+          &nbsp;
+      - if has_children
+        .collapse
+          %a{ :href => '#' } [-]
+      .metric.name&= child[:data][:name]
+      .metric.childAllocations= child[:data][:child_allocations]
+      .metric.selfAllocations= child[:data][:self_allocations]
+      .metric.totalAllocations= child[:data][:total_allocations]
+      .metric.childTime= sprintf("%0.5f", child[:data][:child_time])
+      .metric.selfTime= sprintf("%0.5f", child[:data][:self_time])
+      .metric.totalTime= sprintf("%0.5f", child[:data][:total_time])
+      .metric.percentAllocationsOfTotal== #{child[:data][:percent_allocations_of_total]}%
+      .metric.percentTimeOfTotal== #{child[:data][:percent_time_of_total]}%
+      .metric.calls== #{child[:data][:count]} / #{child[:data][:aggregate_count]}
+      .spacer &nbsp;
+

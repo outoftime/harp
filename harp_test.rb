@@ -55,8 +55,6 @@ report = Harp::Report.new.run do
   call_call_do_nothing
   call_alloc_something
 end
-formatter = Harp::Formatter::Dot.new(report)
-formatter.min_aggregate_percent_allocations_of_total = 51
-formatter.min_aggregate_percent_time_of_total = 100
+formatter = Harp::Formatter::Yaml.new(report)
 formatter.filter_by_signature(/#call_raise_exception$/)
 formatter.write

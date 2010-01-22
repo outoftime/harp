@@ -44,7 +44,8 @@ module Harp
       # side-effect of anything happening in the Harp event hook, so this
       # admittedly ugly hack is the best I can come up with to get the right
       # number of allocations.
-      @total_allocations ||= @allocations - tree_size
+      # @total_allocations ||= @allocations - tree_size
+      @allocations
     end
 
     def self_allocations

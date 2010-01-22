@@ -1,0 +1,54 @@
+body {
+	font-family: monospace;
+}
+
+.id {
+	display: none;
+}
+
+.collapse {
+	display: none;
+}
+
+.header {
+	font-weight: bold;
+}
+
+.callNode {
+	width: 100%;
+}
+
+.slowest > .metric {
+	font-weight: bold;
+}
+
+.callNode div {
+	margin: 0.2em 0.5em;
+}
+
+.callNode .name, .callNode .expand, .callNode .collapse {
+	float: left;
+}
+
+.metric {
+	float: right;
+	width: 8em;
+}
+
+.name { 
+	width: 30em;
+}
+
+ul.children {
+	list-style-type: none;
+	padding-left: 1em;
+}
+
+.expand, .collapse {
+	width: 3em;
+}
+
+.spacer {
+	clear: both;
+	height: 0;
+}

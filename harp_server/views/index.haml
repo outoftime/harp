@@ -1,0 +1,21 @@
+!!! XML
+!!!
+
+%html
+  %head
+    %title== Harp Report: #{@title}
+    %link{ :rel => 'stylesheet', :type => 'text/css', :href => '/index.css' }
+    %script{ :type => 'text/javascript', :src => '/jquery-1.4.min.js' }
+    %script{ :type => 'text/javascript', :src => '/index.js' }
+    #root
+      .callNode.header
+        .metric.childAllocations Child Allocations
+        .metric.selfAllocations Self Allocations
+        .metric.totalAllocations Total Allocations
+        .metric.childTime Child Time
+        .metric.selfTime Self Time
+        .metric.totalTime Total Time
+        .metric.percentAllocationsOfTotal % Allocations of Total
+        .metric.percentTimeOfTotal % Time of Total
+        .metric.calls Calls
+        .spacer &nbsp;
