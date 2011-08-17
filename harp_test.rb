@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'ruby-debug'
-require 'lib/harp'
+require './lib/harp'
 
 def fib(n)
   if n == 0

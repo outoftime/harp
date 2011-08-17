@@ -2,14 +2,12 @@
 #include "sys/times.h"
 #include "assert.h"
 #include "ruby.h"
-#include "node.h"
 
 struct _harp_call_element {
 	VALUE klass;
 	ID name;
-  rb_event_t event;
+  rb_event_flag_t event;
   double clock;
-	unsigned long allocated_objects;
   struct _harp_call_element * next;
 };
 typedef struct _harp_call_element harp_call_element;
@@ -34,8 +32,8 @@ static VALUE Harp_Runner = Qnil;
 
 void Init_runner();
 
-void harp_handle_event(rb_event_t event,
-											 NODE *node,
+void harp_handle_event(rb_event_flag_t event,
+											 VALUE data,
 											 VALUE self,
 											 ID id,
 										   VALUE klass);
@@ -63,7 +61,7 @@ void Init_runner()
 VALUE method_start(VALUE self)
 {
 	rb_add_event_hook(harp_handle_event, RUBY_EVENT_CALL | RUBY_EVENT_C_CALL |
-																       RUBY_EVENT_RETURN | RUBY_EVENT_C_RETURN);
+																       RUBY_EVENT_RETURN | RUBY_EVENT_C_RETURN, Qnil);
 
 	return Qnil;
 }
@@ -84,8 +82,8 @@ VALUE method_stop(VALUE self)
 	return harp_build_ruby_trees(tree);
 }
 
-void harp_handle_event(rb_event_t event,
-											 NODE *node,
+void harp_handle_event(rb_event_flag_t event,
+											 VALUE data,
 											 VALUE self,
 											 ID id,
 										   VALUE klass)
@@ -99,6 +97,7 @@ void harp_handle_event(rb_event_t event,
   new_call_node = ALLOC(harp_call_element);
   new_call_node->next = NULL;
 
+
 	switch(event) {
 	case RUBY_EVENT_CALL:
 	case RUBY_EVENT_C_CALL:
@@ -109,7 +108,6 @@ void harp_handle_event(rb_event_t event,
 
 	new_call_node->event = event;
 	new_call_node->clock = current_clock;
-	new_call_node->allocated_objects = rb_os_allocated_objects();
   if(!root) {
     root = new_call_node;
     current = root;
@@ -166,7 +164,6 @@ static harp_tree_node * harp_build_tree(harp_tree_node * current_node,
 		case RUBY_EVENT_RETURN:
 		case RUBY_EVENT_C_RETURN:
 			current_node->time = (double) call->clock - (double) current_node->call->clock;
-			current_node->allocations = call->allocated_objects - current_node->call->allocated_objects;
 			current_node = current_node->parent;
 			break;
 		}
